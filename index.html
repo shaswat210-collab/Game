@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>9:15 AM Metro Station Pakka 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow-x:hidden;}
+  body{min-height:100vh;font-family:'Lora',serif;display:flex;align-items:center;justify-content:center;transition:background 1.2s ease;}
+
+  #app{
+    min-height:100vh;width:100%;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px 16px 40px;
+    position:relative;overflow:hidden;
+    transition:background 1.2s ease;
+  }
+
+  .star{position:absolute;border-radius:50%;background:rgba(255,255,255,0.85);animation:twinkle 2s infinite alternate;}
+  @keyframes twinkle{0%{opacity:.2;transform:scale(1);}100%{opacity:.9;transform:scale(1.4);}}
+
+  .heart-float{
+    position:absolute;font-size:1.5rem;
+    animation:floatUp 4.5s ease-in infinite;
+    opacity:0.9;pointer-events:none;z-index:1;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(0) rotate(-5deg) scale(0.8);opacity:.9;}
+    50%{transform:translateY(-50vh) rotate(8deg) scale(1.1);opacity:.6;}
+    100%{transform:translateY(-110vh) rotate(20deg) scale(0.7);opacity:0;}
+  }
+
+  #card{width:100%;max-width:520px;transition:opacity 0.45s ease,transform 0.45s ease;position:relative;z-index:2;}
+  #card.hidden{opacity:0;transform:translateY(18px);}
+
+  #dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+  .dot{height:8px;border-radius:4px;background:rgba(255,255,255,0.28);transition:all 0.4s cubic-bezier(.4,0,.2,1);}
+  .dot.active{background:rgba(255,255,255,0.95);width:22px!important;}
+  .dot.done{background:rgba(255,255,255,0.65);}
+
+  #scene-box{
+    background:rgba(255,255,255,0.16);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-radius:28px;padding:34px 30px 28px;
+    border:1.5px solid rgba(255,255,255,0.32);
+    box-shadow:0 16px 56px rgba(0,0,0,0.14),0 2px 8px rgba(0,0,0,0.08);
+    animation:fadeUp 0.55s cubic-bezier(.4,0,.2,1) both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+
+  #scene-emoji{
+    text-align:center;font-size:3.6rem;margin-bottom:14px;
+    filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+    animation:emojiPop 0.5s cubic-bezier(.4,0,.2,1) 0.1s both;
+  }
+  @keyframes emojiPop{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+  #scene-title{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(1.1rem,4.5vw,1.45rem);
+    color:#fff;text-align:center;margin-bottom:18px;
+    text-shadow:0 2px 10px rgba(0,0,0,0.2);
+    line-height:1.35;letter-spacing:0.01em;
+  }
+
+  #scene-text-box{
+    background:rgba(255,255,255,0.11);border-radius:18px;
+    padding:20px 18px;margin-bottom:22px;
+    border:1px solid rgba(255,255,255,0.2);
+    max-height:52vh;overflow-y:auto;
+  }
+  #scene-text{
+    font-family:'Lora',serif;
+    font-size:clamp(0.88rem,2.5vw,1rem);
+    color:rgba(255,255,255,0.96);
+    line-height:2;white-space:pre-line;
+    text-shadow:0 1px 4px rgba(0,0,0,0.12);
+  }
+
+  #choices{display:flex;flex-direction:column;gap:11px;}
+  .choice-btn{
+    background:rgba(255,255,255,0.18);
+    border:1.5px solid rgba(255,255,255,0.42);
+    border-radius:50px;padding:14px 22px;
+    color:#fff;font-family:'Lora',serif;
+    font-size:clamp(0.84rem,2.2vw,0.95rem);
+    cursor:pointer;transition:all 0.22s cubic-bezier(.4,0,.2,1);
+    text-shadow:0 1px 3px rgba(0,0,0,0.12);
+    text-align:center;line-height:1.4;letter-spacing:0.01em;
+  }
+  .choice-btn:hover,.choice-btn:active{
+    background:rgba(255,255,255,0.36);
+    border-color:rgba(255,255,255,0.7);
+    transform:translateY(-2px) scale(1.015);
+    box-shadow:0 6px 20px rgba(0,0,0,0.12);
+  }
+
+  /* ── Music pill ── */
+  #music-pill{
+    position:fixed;
+    bottom:20px;left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,0.38);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.22);
+    border-radius:50px;
+    padding:9px 18px 9px 14px;
+    display:flex;align-items:center;gap:9px;
+    cursor:pointer;
+    z-index:100;
+    transition:all 0.25s ease;
+    user-select:none;
+    white-space:nowrap;
+    animation:pillFadeIn 1.2s ease 0.8s both;
+  }
+  @keyframes pillFadeIn{from{opacity:0;transform:translateX(-50%) translateY(12px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+  #music-pill:hover{background:rgba(0,0,0,0.55);border-color:rgba(255,255,255,0.4);}
+  #music-pill.paused #bars span{animation-play-state:paused;}
+  #pill-icon{font-size:1rem;line-height:1;}
+  #bars{display:flex;align-items:flex-end;gap:2px;height:14px;}
+  #bars span{
+    display:block;width:3px;background:#fff;border-radius:2px;
+    animation:barBounce 0.7s ease infinite alternate;
+    opacity:0.9;
+  }
+  #bars span:nth-child(1){height:6px;animation-delay:0s;}
+  #bars span:nth-child(2){height:12px;animation-delay:0.15s;}
+  #bars span:nth-child(3){height:9px;animation-delay:0.3s;}
+  #bars span:nth-child(4){height:14px;animation-delay:0.1s;}
+  #bars span:nth-child(5){height:7px;animation-delay:0.25s;}
+  @keyframes barBounce{
+    0%{transform:scaleY(0.4);}
+    100%{transform:scaleY(1);}
+  }
+  #pill-label{
+    font-family:'Lora',serif;
+    font-size:0.78rem;color:rgba(255,255,255,0.9);
+    letter-spacing:0.03em;
+  }
+  #pill-label strong{color:#fff;font-weight:500;}
+
+  /* SoundCloud iframe — hidden, just for audio */
+  #sc-frame{position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
+
+  /* ── Final ── */
+  #final-box{
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;padding:16px 12px 0;
+    animation:fadeUp 0.8s cubic-bezier(.4,0,.2,1) both;
+    width:100%;max-width:520px;
+  }
+  #final-emoji{font-size:4.2rem;margin-bottom:14px;animation:pulse 2s ease-in-out infinite;filter:drop-shadow(0 4px 14px rgba(255,100,100,0.3));}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+
+  #final-title{
+    font-family:'Playfair Display',serif;font-style:italic;
+    font-size:clamp(1.5rem,5.5vw,2.2rem);
+    color:#fff;margin-bottom:20px;
+    text-shadow:0 2px 14px rgba(0,0,0,0.22);line-height:1.25;
+  }
+  #final-letter{
+    background:rgba(255,255,255,0.18);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-radius:24px;padding:28px 26px;
+    max-width:480px;width:100%;
+    border:1.5px solid rgba(255,255,255,0.38);
+    box-shadow:0 10px 48px rgba(0,0,0,0.15);
+    margin-bottom:22px;text-align:left;
+  }
+  #final-letter p{
+    font-family:'Lora',serif;
+    font-size:clamp(0.9rem,2.5vw,1.04rem);
+    color:#fff;line-height:2;
+    text-shadow:0 1px 4px rgba(0,0,0,0.12);
+  }
+  #final-sign{
+    font-family:'Playfair Display',serif;font-style:italic;
+    color:#FFE4E1;font-size:1.12rem;margin-top:18px;
+    display:block;text-align:right;
+    text-shadow:0 1px 6px rgba(0,0,0,0.15);
+  }
+  #restart-btn{
+    background:rgba(255,255,255,0.2);
+    border:1.5px solid rgba(255,255,255,0.52);
+    border-radius:50px;padding:12px 30px;
+    color:#fff;font-family:'Lora',serif;
+    font-size:0.92rem;cursor:pointer;
+    transition:all 0.22s ease;letter-spacing:0.02em;
+  }
+  #restart-btn:hover{background:rgba(255,255,255,0.35);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.12);}
+
+  #share-strip{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .share-btn{
+    border-radius:50px;padding:10px 18px;
+    font-family:'Lora',serif;font-size:0.85rem;
+    cursor:pointer;border:none;
+    transition:all 0.2s ease;
+    display:flex;align-items:center;gap:6px;font-weight:500;
+  }
+  .share-wa{background:#25D366;color:#fff;}
+  .share-wa:hover{background:#1ebe5d;transform:translateY(-2px);}
+  .share-copy{background:rgba(255,255,255,0.22);color:#fff;border:1.5px solid rgba(255,255,255,0.4);}
+  .share-copy:hover{background:rgba(255,255,255,0.35);transform:translateY(-2px);}
+
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:rgba(255,255,255,0.08);}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.38);border-radius:3px;}
+
+  @media(max-width:400px){
+    #scene-box{padding:26px 18px 22px;}
+    #final-letter{padding:22px 18px;}
+    #music-pill{font-size:0.72rem;padding:8px 14px 8px 11px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="card">
+    <div id="dots"></div>
+    <div id="scene-box">
+      <div id="scene-emoji"></div>
+      <h2 id="scene-title"></h2>
+      <div id="scene-text-box"><p id="scene-text"></p></div>
+      <div id="choices"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden SoundCloud iframe -->
+<iframe id="sc-frame"
+  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/fredagain/delilah-pull-me-out-of-this&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false"
+  allow="autoplay"
+></iframe>
+
+<!-- Floating music pill -->
+<div id="music-pill" onclick="toggleMusic()">
+  <span id="pill-icon">🎵</span>
+  <div id="bars">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <span id="pill-label"><strong>Delilah</strong> · Fred Again..</span>
+</div>
+
+<!-- SoundCloud Widget API -->
+<script src="https://w.soundcloud.com/player/api.js"></script>
+
+<script>
+// ─── Music ────────────────────────────────────────────────────────────────
+let widget       = null;
+let musicPlaying = false;
+let musicReady   = false;
+let musicStarted = false;
+
+function initMusic(){
+  const iframe = document.getElementById("sc-frame");
+  widget = SC.Widget(iframe);
+  widget.bind(SC.Widget.Events.READY, ()=>{
+    musicReady = true;
+    widget.setVolume(72);
+    // try autoplay immediately (works on some browsers)
+    tryPlay();
+  });
+  widget.bind(SC.Widget.Events.PLAY,  ()=>{ musicPlaying=true;  updatePill(); });
+  widget.bind(SC.Widget.Events.PAUSE, ()=>{ musicPlaying=false; updatePill(); });
+  widget.bind(SC.Widget.Events.FINISH,()=>{ widget.seekTo(0); widget.play(); });
+}
+
+function tryPlay(){
+  if(!musicReady) return;
+  widget.play();
+  musicStarted = true;
+}
+
+function toggleMusic(){
+  if(!musicReady) return;
+  if(!musicStarted){ tryPlay(); return; }
+  if(musicPlaying){ widget.pause(); }
+  else { widget.play(); }
+}
+
+function updatePill(){
+  const pill  = document.getElementById("music-pill");
+  const icon  = document.getElementById("pill-icon");
+  const bars  = document.getElementById("bars");
+  if(musicPlaying){
+    pill.classList.remove("paused");
+    icon.textContent = "🎵";
+    bars.style.opacity = "1";
+  } else {
+    pill.classList.add("paused");
+    icon.textContent = "▶️";
+    bars.style.opacity = "0.35";
+  }
+}
+
+// Start on first user touch/click (browser autoplay policy fallback)
+let firstInteraction = false;
+function onFirstInteraction(){
+  if(firstInteraction) return;
+  firstInteraction = true;
+  if(musicReady && !musicStarted) tryPlay();
+}
+document.addEventListener("click",    onFirstInteraction, {once:false});
+document.addEventListener("touchend", onFirstInteraction, {once:false});
+
+// ─── Scenes ────────────────────────────────────────────────────────────────
+const scenes = {
+
+  intro:{
+    bg:"morning", emoji:"🕘",
+    title:"9:15 AM Metro Station Pakka",
+    text:`You had one job. ONE job. Reach the metro by 9:15 AM.
+
+But first — the lift decided to take a personal day. Lift atak gayi. Just... stopped. Completely. You waited for it. Then waited some more. Then stood there processing your entire life.
+
+You finally gave up, ran down five floors, burst out of the building, and immediately opened the auto app.
+
+Auto book nahi hui yawr.
+
+Five rejections. Three cancellations. One driver who accepted, showed you his little car moving on the map, and then simply... vanished. Gone. Into another dimension.
+
+You are now standing at the metro station, slightly sweaty, mildly existentially defeated, and a full 20 minutes late.`,
+    choices:[
+      {l:"😩 Aaj Bilkul Bhi Man Nahi H Janeka",n:"metro"},
+      {l:"🤩 Excited to go??",n:"metro"}
+    ]
+  },
+
+  metro:{
+    bg:"metro", emoji:"🚉",
+    title:"Aarey JVLR Metro Station",
+    text:`You board the train, find a seat, and pull out your breakfast — your chocolate protein oats. Your one remaining source of joy today.
+
+That is when you notice him.
+
+The guy sitting right next to you. He has the energy of a monkey. Not in a mean way — just, genuinely, the vibe is very monkey.
+
+And he is staring at your oats.
+
+Not glancing. Not peeking. Full-on, unblinking, committed staring. Like your breakfast is the most important thing he has ever seen in his life.
+
+You feel his eyes. You look up. He looks away immediately, very casually.
+You look back down. He looks back at your oats.
+
+You offer him some. Against all logic.
+
+He takes one bite. His whole face transforms.
+
+"Kya solid chocolate protein oats h yawr!" he announces, loudly, to the entire metro compartment.`,
+    choices:[
+      {l:"😏 \"Aapne Tedhe Medhe Khae H Kabhi?\"",n:"siddhivinayak"},
+      {l:"🙄 Ignore Him",n:"siddhivinayak_cold"}
+    ]
+  },
+
+  siddhivinayak:{
+    bg:"city", emoji:"🏙️",
+    title:"Siddhivinayak Metro Station",
+    text:`The snack conversation continues all the way off the metro. He has very strong feelings about biscuits.
+
+Now at Siddhivinayak, you have a decision: walk to the office or get a taxi?
+
+Feet say taxi. Wallet sighs. You open the app anyway.
+
+No cabs nearby. One cab, 14 minutes away. You stare at the screen. You close the app.
+
+And then — of course — this guy steps one foot off the curb, raises a hand, and a taxi materialises from thin air. Immediately. Like it was always meant for him.
+
+He looks at you. You look at him. He tilts his head toward the cab. One eyebrow up.`,
+    choices:[
+      {l:"🚕 Go with him and Talk to Him",n:"vadapav"},
+      {l:"🚶 Ignore and walk to the office",n:"vadapav_walk"}
+    ]
+  },
+
+  siddhivinayak_cold:{
+    bg:"city", emoji:"🏙️",
+    title:"Siddhivinayak Metro Station",
+    text:`You ignored him on the metro. Very composed. Extremely unbothered.
+
+You are now standing at Siddhivinayak, staring at a cab app that is offering you nothing. Zero cabs. The city has simply decided.
+
+And then this guy — the monkey man — steps to the curb, waves his hand once, and a taxi pulls up immediately. Like it was parked around the corner waiting specifically for him.
+
+He glances at you. The cab is right there. There is room.`,
+    choices:[
+      {l:"🚕 Fine. Get in the cab.",n:"vadapav"},
+      {l:"🚶 Walk. Alone. In the heat.",n:"vadapav_walk"}
+    ]
+  },
+
+  vadapav:{
+    bg:"city", emoji:"🥪",
+    title:"Vadapav Khaneka Man Ho Raha",
+    text:`It is 11 AM.
+
+You are not exactly hungry. But you are absolutely not not hungry. The specific Mumbai feeling has arrived — the city itself is telling you to eat a vadapav. You cannot argue with this.
+
+You head downstairs.
+
+And there he is. Standing at the exact same vadapav stall. Staring at the menu board with the focus of a man deciding something very important.
+
+He hasn't noticed you yet.
+
+One vadapav. One decision.`,
+    choices:[
+      {l:"🤝 Share Half Vadapav with Him",n:"coffee"},
+      {l:"🤐 Stuff all of it in your little stomach and say nothing",n:"coffee"}
+    ]
+  },
+
+  vadapav_walk:{
+    bg:"city", emoji:"🥾",
+    title:"Vadapav Khaneka Man Ho Raha",
+    text:`You walked. In the full Mumbai heat. 18 minutes.
+
+It was fine. You are fine. Absolutely fine.
+
+At 11 AM, the vadapav craving arrives — as it always does, as it always will. You head downstairs, slightly warm, slightly hungry, fully committed to eating.
+
+And — obviously — he is there. At the vadapav stall. Looking completely relaxed. Like he didn't just take a taxi that you could have also been in.
+
+It doesn't matter. There is a vadapav situation to address.`,
+    choices:[
+      {l:"🤝 Share Half Vadapav with Him",n:"coffee"},
+      {l:"🤐 Quietly get yours and disappear",n:"coffee"}
+    ]
+  },
+
+  coffee:{
+    bg:"office", emoji:"☕",
+    title:"Extra Coffee",
+    text:`It is 4 PM.
+
+You had ordered coffee for yourself and your friend. Your friend, however, had somewhere urgent to be and left early — without collecting the coffee. Without telling you. Without any warning whatsoever.
+
+You are now standing in the corridor holding two cups, looking like someone who over-prepared for a meeting that got cancelled.
+
+You do what any reasonable person would do.
+
+You take both coffees to the 6th floor stairs. The quiet spot. The one place in the building where no one asks you anything.
+
+And he is there.
+
+Sitting on the stairs, legs stretched out, looking like he is also processing something. The stairwell is quiet. You are holding two coffees.`,
+    choices:[
+      {l:"☕ Offer Him One",n:"cat_walk"},
+      {l:"😶 Have Both and Don't Talk to Him",n:"cat_walk"}
+    ]
+  },
+
+  cat_walk:{
+    bg:"evening", emoji:"🐱",
+    title:"Walk Back to the Metro",
+    text:`The day is done. You are walking back to the metro, earphones in, minding your business.
+
+Near the footpath, you spot a small cat sitting very properly, like she has an appointment.
+
+Her name tag says: Harleen 🐱
+
+You crouch down to pet her. She looks at you. Considers you. Then looks away. Very deliberately. Not rudely — just... professionally. As if she has assessed the situation and decided this is not the moment.
+
+And then he walks past. The monkey man.
+
+Harleen's entire energy changes. She gets up immediately and trots over to him. He crouches, pets her gently, and then — you watch this happen — leans in and whispers something in her ear.
+
+Harleen listens. She looks at him for a long moment.
+
+Then she turns around, walks back to you, sits down in front of you, and says, in a very small and very serious voice:
+
+"Okay. He told me to stay out of it, but I'm saying this anyway.
+
+He's silly. He is genuinely annoying sometimes. He is absolutely oversmart and he is very aware of this fact.
+
+He messed up. He knows that.
+
+But he sees you — not the version you show everyone, you, you. He listens to things you say once and remembers them forever. He understands you in the way that very few people ever actually will.
+
+He loves you a lot. Please forgive him."
+
+She headbutts your ankle once. Then sits back with enormous dignity and says nothing more.`,
+    choices:[
+      {l:"🥺 Forgive him and talk to him",n:"jvlr_final"},
+      {l:"🚶 Not now. Keep walking.",n:"jvlr_final"}
+    ]
+  },
+
+  jvlr_final:{
+    bg:"dawn", emoji:"🌆",
+    title:"Aarey JVLR Metro Station",
+    text:`You are back at Aarey JVLR — where every day starts and ends.
+
+The same platform. The same evening light, long and golden across the tracks.
+
+He is here.
+
+He walks over — not dramatically, not with a prepared speech — and he just says it quietly:
+
+"I'm really sorry. I know that's not enough on its own. But what we have is worth so much more than where we are right now. I don't want to rush you. I just — I want us to be okay. And I know, if we just give it a little time, we can be. I really believe that."
+
+You look at him.
+
+You are still a little angry. That's real, and it's allowed.
+
+But somewhere underneath everything, you also know — this silence, this distance — it's not who you are. It's not what you want. You want to build something beautiful with him. You always did. That part hasn't gone anywhere.`,
+    choices:[
+      {l:"💛 Forgive him. Talk to him.",n:"final"},
+      {l:"🌱 \"I need a little time — but I'll talk to you throughout.\"",n:"final"},
+      {l:"🚶 Ignore him forever",n:"ignore_end"}
+    ]
+  },
+
+  ignore_end:{
+    bg:"dawn", emoji:"😔",
+    title:"Platform No. 2",
+    text:`You walked past.
+
+He didn't call after you. He didn't chase. He just watched you go, the way someone does when they've run out of ways to ask and have decided to simply wait.
+
+The platform got very quiet.
+
+Harleen appeared — as she always does when things get sad — and sat down beside him without being asked.
+
+They both stared at the metro tracks in silence for a long time.
+
+"She'll come back," Harleen said. With complete certainty. No hesitation.
+
+He nodded slowly. "I know. I'll wait."
+
+...
+
+Harleen turned and looked across the platform. Directly at you.
+
+One slow blink.`,
+    choices:[
+      {l:"🔙 Go back to him",n:"jvlr_final"}
+    ]
+  },
+
+  final:{bg:"final", emoji:"💌", isFinal:true}
+};
+
+// ─── Backgrounds ──────────────────────────────────────────────────────────
+const BG = {
+  morning: "linear-gradient(145deg,#FCEABB 0%,#F8B500 50%,#F0860A 100%)",
+  metro:   "linear-gradient(145deg,#2C5282 0%,#4A90D9 50%,#1A3A5C 100%)",
+  city:    "linear-gradient(145deg,#F7971E 0%,#FFD200 60%,#F9A825 100%)",
+  office:  "linear-gradient(145deg,#0ED2F7 0%,#B2FEFA 50%,#81D8F7 100%)",
+  evening: "linear-gradient(145deg,#614385 0%,#516395 50%,#8E54E9 100%)",
+  dawn:    "linear-gradient(145deg,#FFD4A3 0%,#FFAB76 50%,#FF8C5A 100%)",
+  final:   "linear-gradient(145deg,#FFDDE1 0%,#FCB69F 50%,#FF9A9E 100%)"
+};
+
+let currentId = "intro";
+let stepCount  = 0;
+const nonFinalScenes = Object.keys(scenes).filter(k => !scenes[k].isFinal);
+const totalSteps = nonFinalScenes.length;
+
+function buildStars(){
+  const app=document.getElementById("app");
+  for(let i=0;i<32;i++){
+    const s=document.createElement("div");s.className="star";
+    const sz=Math.random()*3+1;
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-delay:${Math.random()*3}s;animation-duration:${1.5+Math.random()*2}s;`;
+    app.appendChild(s);
+  }
+}
+
+let heartEls=[];
+function showHearts(){
+  const emojis=["💕","💖","✨","🌸","💫","🌷","💝","🥺","💗","🍫","☕","🐱"];
+  heartEls.forEach(e=>e.remove());heartEls=[];
+  const app=document.getElementById("app");
+  emojis.forEach((h,i)=>{
+    const d=document.createElement("div");d.className="heart-float";d.textContent=h;
+    d.style.cssText=`left:${6+i*8}%;bottom:-50px;animation-delay:${i*0.5}s;animation-duration:${3.8+Math.random()*1.5}s;font-size:${1.1+Math.random()*0.9}rem;`;
+    app.appendChild(d);heartEls.push(d);
+  });
+}
+function hideHearts(){heartEls.forEach(e=>e.remove());heartEls=[];}
+
+function renderDots(){
+  const dotsEl=document.getElementById("dots");dotsEl.innerHTML="";
+  const cur=Math.min(stepCount,totalSteps-1);
+  for(let i=0;i<totalSteps;i++){
+    const d=document.createElement("div");d.className="dot";d.style.width=i===cur?"22px":"8px";
+    if(i<cur)d.classList.add("done");else if(i===cur)d.classList.add("active");
+    dotsEl.appendChild(d);
+  }
+}
+
+function shareWhatsApp(){
+  const url=encodeURIComponent(window.location.href);
+  const text=encodeURIComponent("🚇💌 Play this little love story — it starts at a metro station (with a stuck lift and a cancelled auto) and ends somewhere very special...\n\n");
+  window.open(`https://wa.me/?text=${text}${url}`,"_blank");
+}
+function copyLink(){
+  navigator.clipboard.writeText(window.location.href).then(()=>{
+    const btn=document.getElementById("copy-btn");
+    if(btn){btn.textContent="✅ Copied!";setTimeout(()=>{btn.textContent="🔗 Copy Link";},2000);}
+  }).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=window.location.href;
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+  });
+}
+
+function renderScene(id){
+  const scene=scenes[id];
+  const app=document.getElementById("app");
+  const card=document.getElementById("card");
+  app.style.background=BG[scene.bg]||BG.dawn;
+
+  if(scene.isFinal){
+    document.getElementById("dots").style.display="none";
+    document.getElementById("scene-box").style.display="none";
+    const old=document.getElementById("final-box");if(old)old.remove();
+    const box=document.createElement("div");box.id="final-box";
+    box.innerHTML=`
+      <div id="final-emoji">💌</div>
+      <h2 id="final-title">You made it. 🥺</h2>
+      <div id="final-letter">
+        <p>Hi. It's me. The guy who ate your chocolate protein oats on the metro and had absolutely zero regrets about it. 👋<br><br>
+        I know I messed up. I know that sorry alone doesn't undo things — but I mean it with every part of me. I am sorry, I am trying, and I will keep trying for as long as it takes.<br><br>
+        I think about you in the small things. Every extra cup of coffee. Every vadapav stall. Every 6th floor staircase. Every stuck lift. Every auto that refuses to book. Every little inconvenient thing that would have been better if you were there to complain about it with me.<br><br>
+        Harleen believes in us, by the way. Completely. She told me herself — and Harleen has extremely high standards and does not give that kind of endorsement easily.<br><br>
+        You are my favourite person. My best friend. The one who makes a terrible, hectic, lift-atak-gayi, auto-nahi-mili kind of day feel okay — because at the end of it, there's you.<br><br>
+        I made you a whole game just to say one thing: <strong style="color:#FFE4E1;font-style:italic;">please talk to me again.</strong><br><br>
+        I'll be right here. At Aarey JVLR. With your oats. 🍫</p>
+        <span id="final-sign">— Yours, always 💕</span>
+      </div>
+      <button id="restart-btn">🔄 Play again from the start</button>
+      <div id="share-strip">
+        <button class="share-btn share-wa" onclick="shareWhatsApp()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/></svg>
+          Share on WhatsApp
+        </button>
+        <button id="copy-btn" class="share-btn share-copy" onclick="copyLink()">🔗 Copy Link</button>
+      </div>
+    `;
+    card.appendChild(box);
+    document.getElementById("restart-btn").onclick=()=>goTo("intro");
+    showHearts();
+    return;
+  }
+
+  hideHearts();
+  document.getElementById("dots").style.display="flex";
+  document.getElementById("scene-box").style.display="block";
+  const old=document.getElementById("final-box");if(old)old.remove();
+
+  document.getElementById("scene-emoji").textContent=scene.emoji;
+  document.getElementById("scene-title").textContent=scene.title;
+  document.getElementById("scene-text").textContent=scene.text;
+
+  const choicesEl=document.getElementById("choices");choicesEl.innerHTML="";
+  scene.choices.forEach(c=>{
+    const btn=document.createElement("button");btn.className="choice-btn";btn.textContent=c.l;
+    btn.onclick=()=>goTo(c.n);choicesEl.appendChild(btn);
+  });
+
+  const sb=document.getElementById("scene-box");sb.style.animation="none";void sb.offsetHeight;
+  sb.style.animation="fadeUp 0.55s cubic-bezier(.4,0,.2,1) both";
+  renderDots();
+}
+
+function goTo(id){
+  const card=document.getElementById("card");card.classList.add("hidden");
+  setTimeout(()=>{
+    currentId=id;
+    if(!scenes[id].isFinal)stepCount++;
+    renderScene(id);card.classList.remove("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+  },400);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+buildStars();
+renderScene("intro");
+
+// Init music after a tiny delay (let page settle)
+setTimeout(initMusic, 800);
+</script>
+</body>
+</html>
